@@ -1,0 +1,44 @@
+{
+  "name": "past/paytr",
+  "type": "library",
+  "description": "Laravel Paytr Payment Gateway",
+  "license": "MIT",
+  "keywords": [
+    "php",
+    "laravel",
+    "paytr",
+    "payment",
+    "gateway"
+  ],
+  "authors": [
+    {
+      "name": "PAST - Product and Software Technologies",
+      "email": "info@past.com.tr"
+    }
+  ],
+  "require": {
+    "php": "^8.0|^8.1",
+    "guzzlehttp/guzzle": "^7.0.1",
+    "illuminate/collections": "^8|^9",
+    "illuminate/http": "^9.0|^10.0",
+    "illuminate/support": "^8.0|^9.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Past\\Paytr\\": "src/"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Past\\Paytr\\PaytrServiceProvider"
+      ],
+      "aliases": {
+        "Paytr": "Past\\Paytr\\Facade\\Paytr"
+      }
+    }
+  }
+}
