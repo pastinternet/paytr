@@ -47,6 +47,11 @@ class Basket
 
     public function getFormatted(): string
     {
-        return htmlentities(json_encode($this->products));
+        return htmlentities(json_encode($this->getProducts()));
+    }
+
+    public function getFormattedBase64(): string
+    {
+        return base64_encode(json_encode($this->getProducts()));
     }
 }

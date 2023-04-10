@@ -4,7 +4,7 @@ namespace Past\Paytr\Enums;
 
 enum Currency: string
 {
-    case TRY = 'TRY';
+    case TL = 'TL';
     case EUR = 'EUR';
     case USD = 'USD';
     case GBP = 'GBP';
