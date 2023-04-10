@@ -269,7 +269,8 @@ class Payment
 
         try {
             $response = $request->getBody()->getContents();
-            if (is_string($response)) {
+            $content = json_decode($response, true);
+            if (is_null($content)) {
                 $paymentResponse = (new PaymentResponse())
                     ->setIsHtml(true)
                     ->setHtml($response)
@@ -278,8 +279,8 @@ class Payment
             } else {
                 $paymentResponse = (new PaymentResponse())
                     ->setIsHtml(false)
-                    ->setIsSuccess('success' == $response['status'])
-                    ->setContent($response);
+                    ->setIsSuccess('success' == $content['status'])
+                    ->setContent($content);
                 $this->setResponse($paymentResponse);
             }
         } catch (HttpExceptionInterface $e) {
