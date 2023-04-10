@@ -4,18 +4,19 @@ namespace Past\Paytr;
 
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Past\Paytr\Enums\PaymentType;
 use Past\Paytr\Enums\TransactionType;
 use Past\Paytr\Request\Config;
 use Past\Paytr\Request\Option;
 use Past\Paytr\Request\Order;
+use Past\Paytr\Response\PaymentResponse;
 
 class Payment
 {
     private Client $client;
     private Config $config;
     private Option $option;
+    private PaymentResponse $response;
 
     public function __construct(?array $config = [], ?array $options = [])
     {
@@ -85,6 +86,42 @@ class Payment
     }
 
     /**
+     * @return Client
+     */
+    public function getClient(): Client
+    {
+        return $this->client;
+    }
+
+    /**
+     * @param Client $client
+     * @return Payment
+     */
+    public function setClient(Client $client): Payment
+    {
+        $this->client = $client;
+        return $this;
+    }
+
+    /**
+     * @return PaymentResponse
+     */
+    public function getResponse(): PaymentResponse
+    {
+        return $this->response;
+    }
+
+    /**
+     * @param PaymentResponse $response
+     * @return Payment
+     */
+    public function setResponse(PaymentResponse $response): Payment
+    {
+        $this->response = $response;
+        return $this;
+    }
+
+    /**
      * @return string
      */
     protected function generateHash(): string
@@ -134,6 +171,9 @@ class Payment
         return base64_encode(hash_hmac('sha256', sprintf('%s%s', $this->getOrder()->getHash(), $this->getConfig()->getMerchantSalt()), $this->getConfig()->getMerchantKey(), true));
     }
 
+    /**
+     * @return bool
+     */
     public function checkHash(): bool
     {
         $request = Request::createFromGlobals();
@@ -209,7 +249,11 @@ class Payment
         return $data;
     }
 
-    public function call(): Response
+    /**
+     * @return PaymentResponse
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function call(): Payment
     {
         $data = $this->generateData();
 
@@ -223,8 +267,25 @@ class Payment
             'timeout' => $this->getOption()->getTimeOutLimit(),
         ]);
 
-        $response = $request->getBody()->getContents();
+        try {
+            $response = $request->getBody()->getContents();
+            if (is_string($response)) {
+                $paymentResponse = (new PaymentResponse())
+                    ->setIsHtml(true)
+                    ->setHtml($response)
+                    ->setIsSuccess(true);
+                $this->setResponse($paymentResponse);
+            } else {
+                $paymentResponse = (new PaymentResponse())
+                    ->setIsHtml(false)
+                    ->setIsSuccess('success' == $response['status'])
+                    ->setContent($response);
+                $this->setResponse($paymentResponse);
+            }
+        } catch (HttpExceptionInterface $e) {
+            throw new ClientException($e->getMessage());
+        }
 
-        return new Response($response);
+        return $this;
     }
 }
